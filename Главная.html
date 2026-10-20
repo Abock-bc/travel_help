@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Recommendation Website</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f7f6;
+        }
+
+        /* Навигационная панель (Задание 5) */
+        nav {
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: #1abc9c;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        .search-container input {
+            padding: 6px 12px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .search-container button {
+            padding: 6px 14px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn-search {
+            background-color: #1abc9c;
+            color: white;
+        }
+
+        .btn-search:hover {
+            background-color: #16a085;
+        }
+
+        .btn-clear {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background-color: #c0392b;
+        }
+
+        /* Контейнер страницы */
+        .container {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        section {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        /* Результаты поиска */
+        .recommendation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 1.5rem;
+        }
+
+        .card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .card-content {
+            padding: 1rem;
+        }
+
+        /* Раздел О нас */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 1rem;
+        }
+
+        .team-member {
+            background: #ecf0f1;
+            padding: 1rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        /* Раздел Контакты */
+        .contact-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .contact-container {
+                grid-template-columns: 1fr;
+            }
+            nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        .contact-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+            padding: 8px 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .contact-form button {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .contact-form button:hover {
+            background-color: #34495e;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Навигационная панель (Элементы: Главная, About Us, Contact Us, Search Input, Search Btn, Clear Btn) -->
+    <nav>
+        <ul>
+            <li><a href="#home">Главная</a></li>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#contact">Contact Us</a></li>
+        </ul>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search beach, temple, country...">
+            <button class="btn-search" onclick="searchRecommendation()">Search</button>
+            <button class="btn-clear" onclick="clearSearch()">Clear</button>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <!-- Область вывода результатов поиска -->
+        <section id="searchResults" style="display: none;">
+            <h2>Результаты поиска</h2>
+            <div id="resultContainer" class="recommendation-grid"></div>
+        </section>
+
+        <!-- Раздел Главная -->
+        <section id="home">
+            <h1>Добро пожаловать в Travel Recommendation!</h1>
+            <p>Откройте для себя самые невероятные места на планете. Воспользуйтесь нашей строкой поиска в меню, чтобы найти потрясающие пляжи, исторические храмы или целый мир увлекательных стран для вашего следующего путешествия!</p>
+        </section>
+
+        <!-- Раздел О нас -->
+        <section id="about">
+            <h2>About Us</h2>
+            <p>Мы — команда энтузиастов и путешественников, объединивших усилия для создания идеального сервиса по подбору туров и туристических направлений.</p>
+            <h3 style="margin-top: 1.5rem;">Наша команда</h3>
+            <div class="team-grid">
+                <div class="team-member">
+                    <h4>Иван Иванов</h4>
+                    <p>Основатель & CEO</p>
+                </div>
+                <div class="team-member">
+                    <h4>Анна Смирнова</h4>
+                    <p>Главный гид</p>
+                </div>
+                <div class="team-member">
+                    <h4>Алексей Петров</h4>
+                    <p>Разработчик</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Раздел Контакты с формой Email -->
+        <section id="contact">
+            <h2>Contact Us</h2>
+            <div class="contact-container">
+                <div>
+                    <h3>Свяжитесь с нами</h3>
+                    <p>Если у вас есть вопросы, предложения или вам нужна помощь с выбором тура, напишите нам!</p>
+                    <br>
+                    <p><strong>Email:</strong> info@travelrecommendation.com</p>
+                    <p><strong>Телефон:</strong> +7 (700) 123-45-67</p>
+                    <p><strong>Адрес:</strong> г. Астана, ул. Кабанбай Батыра, 60a</p>
+                </div>
+                
+                <form class="contact-form" onsubmit="handleFormSubmit(event)">
+                    <label for="name">Ваше имя:</label>
+                    <input type="text" id="name" required placeholder="Введите имя">
+
+                    <label for="email">Ваш Email:</label>
+                    <input type="email" id="email" required placeholder="example@mail.com">
+
+                    <label for="message">Сообщение:</label>
+                    <textarea id="message" rows="4" required placeholder="Ваш вопрос или сообщение..."></textarea>
+
+                    <button type="submit">Отправить Email</button>
+                </form>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // Данные рекомендаций (Пляжи, Храмы, Страны)
+        const travelData = {
+            beaches: [
+                {
+                    name: "Пляж Бора-Бора (Bora Bora)",
+                    description: "Бирюзовые лагуны и белейший песок в самом сердце Тихого океана.",
+                    imageUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500"
+                },
+                {
+                    name: "Пляж Малибу (Malibu Beach)",
+                    description: "Знаменитое побережье Калифорнии с великолепными закатами и волнами для сёрфинга.",
+                    imageUrl: "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=500"
+                }
+            ],
+            temples: [
+                {
+                    name: "Ангкор-Ват (Angkor Wat)",
+                    description: "Великолепный древний храмовый комплекс в Камбодже.",
+                    imageUrl: "https://images.unsplash.com/photo-1578637387939-43c525550085?w=500"
+                },
+                {
+                    name: "Храм Кинкаку-дзи (Kyoto Temple)",
+                    description: "Знаменитый Золотой павильон в Киото, Япония.",
+                    imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=500"
+                }
+            ],
+            countries: [
+                {
+                    name: "Япония (Japan)",
+                    description: "Страна контрастов, где древние традиции гармонично сочетаются с футуризмом.",
+                    imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=500"
+                },
+                {
+                    name: "Италия (Italy)",
+                    description: "Колыбель мировой истории, великолепного искусства и знаменитой кухни.",
+                    imageUrl: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=500"
+                }
+            ]
+        };
+
+        // Функция поиска
+        function searchRecommendation() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const searchResultsSection = document.getElementById('searchResults');
+            const container = document.getElementById('resultContainer');
+            
+            container.innerHTML = '';
+
+            let results = [];
+
+            if (query.includes('beach') || query.includes('пляж')) {
+                results = travelData.beaches;
+            } else if (query.includes('temple') || query.includes('храм')) {
+                results = travelData.temples;
+            } else if (query.includes('country') || query.includes('страна') || query.includes('countries')) {
+                results = travelData.countries;
+            }
+
+            if (results.length > 0) {
+                searchResultsSection.style.display = 'block';
+                results.forEach(item => {
+                    container.innerHTML += `
+                        <div class="card">
+                            <img src="${item.imageUrl}" alt="${item.name}">
+                            <div class="card-content">
+                                <h3>${item.name}</h3>
+                                <p>${item.description}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+                searchResultsSection.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                searchResultsSection.style.display = 'block';
+                container.innerHTML = '<p>По вашему запросу ничего не найдено. Попробуйте ввести "beach", "temple" или "country".</p>';
+            }
+        }
+
+        // Функция очистки поиска
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('resultContainer').innerHTML = '';
+            document.getElementById('searchResults').style.display = 'none';
+        }
+
+        // Обработка формы контактов
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            alert('Спасибо за ваше сообщение! Мы свяжемся с вами в ближайшее время.');
+            event.target.reset();
+        }
+    </script>
+
+</body>
+</html>
